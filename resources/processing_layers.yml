@@ -1,0 +1,50 @@
+resources:
+  jobs:
+    processing_layers_job:
+      name: skuper_processing_layers_job
+      tags: {'product_id': 'PRO-238'}
+      email_notifications:
+        on_failure:
+          - simon.eberle@LEGO.com
+      schedule:
+        quartz_cron_expression: "0 0 12 * * ?"
+        timezone_id: Europe/Copenhagen
+        pause_status: UNPAUSED
+
+      tasks:
+        - task_key: bronze-layer
+          job_cluster_key: job_cluster
+          notebook_task:
+            notebook_path: ../src/processing_layers/bronze.ipynb
+
+        - task_key: silver-layer
+          depends_on:
+            - task_key: bronze-layer
+          job_cluster_key: job_cluster
+          notebook_task:
+            notebook_path: ../src/processing_layers/silver.ipynb
+
+        - task_key: gold-layer
+          depends_on:
+            - task_key: silver-layer
+          job_cluster_key: job_cluster
+          notebook_task:
+            notebook_path: ../src/processing_layers/gold.ipynb
+
+      job_clusters:
+        - job_cluster_key: job_cluster
+          new_cluster:
+            spark_version: 13.3.x-scala2.12
+            autoscale:
+              min_workers: 1
+              max_workers: 4
+            policy_id: ${var.policy_id}
+            data_security_mode: SINGLE_USER
+            node_type_id: i4i.large
+            aws_attributes:
+              first_on_demand: 1
+            spark_env_vars:
+              environment: ${bundle.environment}
+      permissions:
+        - group_name: c1.app.access.sscdp.product_intelligence.developer # NOTE: some groups have a number in the name
+          level: CAN_MANAGE_RUN

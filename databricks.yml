@@ -1,0 +1,32 @@
+bundle:
+  name: skuper
+
+include:
+  - resources/*
+
+variables:
+  policy_id:
+    description: Policy ID for cluster
+    default: A963D86B02001DC8
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://lego-ssc-dev.cloud.databricks.com
+    variables:
+      policy_id: A963D86B02001DC8
+
+  qa:
+    mode: development
+    workspace:
+      host: https://lego-ssc-qa.cloud.databricks.com
+    variables:
+      policy_id: A96377E9F70003FA
+
+  prod:
+    workspace:
+      host: https://lego-ssc-prod.cloud.databricks.com
+    variables:
+      policy_id: A96377E9F70003FE

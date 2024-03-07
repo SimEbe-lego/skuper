@@ -1,0 +1,30 @@
+name: Deploy
+description: Deployment Action
+
+inputs:
+  environment:
+    description: "Deployment environment"
+    required: true
+  databricks_client_id:
+    description: "Databricks OAuth client ID"
+    required: true
+  databricks_client_secret:
+    description: "Databricks OAuth client secret"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+
+    - uses: databricks/setup-cli@main
+
+    - name: Deploy
+      shell: bash
+      working-directory: .
+      env:
+        DATABRICKS_CLIENT_ID: ${{ inputs.databricks_client_id }}
+        DATABRICKS_CLIENT_SECRET: ${{ inputs.databricks_client_secret }}
+        DATABRICKS_BUNDLE_ENV: ${{ inputs.environment }}
+      run: |
+        databricks bundle deploy
